@@ -1,7 +1,11 @@
 package com.cookin.recipemanager.domain;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 public class RecipePage {
+    @Schema(name = "Page Number", example = "0", required = false)
     private int pageNumber = 0;
+    @Schema(name = "Page Size", example = "10", required = false)
     private int pageSize = 10;
 
     public int getPageNumber() {

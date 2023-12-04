@@ -5,6 +5,9 @@ import com.cookin.recipemanager.domain.RecipeFilters;
 import com.cookin.recipemanager.domain.RecipePage;
 import com.cookin.recipemanager.entity.Recipe;
 import com.cookin.recipemanager.service.RecipeService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.springdoc.core.annotations.ParameterObject;
@@ -18,6 +21,7 @@ import java.net.URI;
 @Log4j2
 @RestController
 @RequestMapping(RecipeController.BASE_PATH)
+@Tag( name = "Recipe Endpoints")
 public class RecipeController {
 
     static final String BASE_PATH = "/api/recipes";
@@ -42,6 +46,19 @@ public class RecipeController {
         return ResponseEntity.created(locationOfNewAccount).build();
     }
 
+    @Operation(
+            description = "Get endpoints for list the Recipes",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Data Not Found",
+                            responseCode = "404"
+                    )
+            }
+    )
     @GetMapping
     public ResponseEntity<Page<Recipe>> getAllRecipe(@Valid @ParameterObject RecipeFilters recipeFilters, @ParameterObject RecipePage page){
         log.info("Request for all Recipes");
