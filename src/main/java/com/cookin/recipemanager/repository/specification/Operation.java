@@ -4,21 +4,19 @@ public enum Operation {
     EQUAL, NOT_EQUAL, LESS_THAN, LESS_THAN_EQUAL, GREAT_THAN,
     GREAT_THAN_EQUAL, CONTAIN, NOT_CONTAIN, IN, NOT_IN;
 
-    public static final String[] SIMPLE_OPERATION_SET = { ":", "!:", "<", "<:", ">", ">:", "*", "!*", "^", "!^"};
-
     public static Operation getOperation(String input) {
         return switch (input) {
-            case ":" -> EQUAL;
-            case "!:" -> NOT_EQUAL;
-            case "<" -> LESS_THAN;
-            case "<:" -> LESS_THAN_EQUAL;
-            case ">" -> GREAT_THAN;
-            case ">:" -> GREAT_THAN_EQUAL;
-            case "*" -> CONTAIN;
-            case "!*" -> NOT_CONTAIN;
-            case "^" -> IN;
-            case "!^" -> NOT_IN;
-            default -> throw new IllegalStateException("Unexpected value: " + input);
+            case "eq" -> EQUAL;
+            case "ne" -> NOT_EQUAL;
+            case "lt" -> LESS_THAN;
+            case "le" -> LESS_THAN_EQUAL;
+            case "gt" -> GREAT_THAN;
+            case "ge" -> GREAT_THAN_EQUAL;
+            case "cn" -> CONTAIN;
+            case "nc" -> NOT_CONTAIN;
+            case "in" -> IN;
+            case "ni" -> NOT_IN;
+            default -> throw new IllegalStateException("Unexpected value " + input);
         };
     }
 }

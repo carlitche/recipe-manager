@@ -1,14 +1,12 @@
 package com.cookin.recipemanager.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.List;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
@@ -25,10 +23,10 @@ public class Recipe {
     @Column(name = "is_vegetarian")
     private Boolean isVegetarian;
 
-    private int serving;
+    private Integer serving;
 
     @ElementCollection(targetClass = String.class)
-    @CollectionTable(name="recipe_ingredients", joinColumns=@JoinColumn(name="ingredient_id"))
+    @CollectionTable(name="recipe_ingredients", joinColumns=@JoinColumn(name="recipe_id"))
     @Column(name = "ingredients")
     private List<String> ingredients;
 

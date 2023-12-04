@@ -1,7 +1,6 @@
 package com.cookin.recipemanager.unit.repository;
 
 
-import com.cookin.recipemanager.config.Configuration;
 import com.cookin.recipemanager.entity.Recipe;
 import com.cookin.recipemanager.repository.RecipeRepository;
 import com.cookin.recipemanager.repository.specification.Operation;
@@ -14,7 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.DirtiesContext;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -29,14 +30,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import(Configuration.class)
 public class RecipeRepositoryTest {
 
     @Autowired
     RecipeRepository recipeRepository;
-
-    @Autowired
-    RecipeSpecification specification;
 
     @Container
     @ServiceConnection
@@ -52,7 +49,7 @@ public class RecipeRepositoryTest {
     void setup(){
         List<Recipe> recipes = List.of(
                 new Recipe(1L, "recipe test 1", false, 4, List.of( "ingredient 1", "ingredient 2", "ingredient 4"), "recipe 1 instructions, boil, oven ..."),
-                new Recipe(2L, "recipe test 2", true, 2, List.of( "ingredient 2", "ingredient 3", "ingredient 5"), "recipe 2 instructions, chop, airFair..."),
+                new Recipe(2L, "recipe test 2", true, 2, List.of( "ingredient 2", "ingredient 3", "ingredient 5"), "recipe 2 instructions, chop, airFryer..."),
                 new Recipe(3L, "recipe test 3", true, 6, List.of( "ingredient 1", "ingredient 4", "ingredient 5"), "recipe 3 instructions, marinate, oven..."),
                 new Recipe(4L, "recipe test 4", false, 4, List.of( "ingredient 7", "ingredient 8", "ingredient 9"), "recipe 4 instructions, bake, oven..."),
                 new Recipe(5L, "recipe test 5", true, 8, List.of( "ingredient 3", "ingredient 5", "ingredient 9"), "recipe 5 instructions, roast, reduce...")
@@ -76,6 +73,19 @@ public class RecipeRepositoryTest {
 
         assertThat(newRecipe.getId()).isNotNull();
         assertThat(newRecipe.getName()).isEqualTo(recipe.getName());
+    }
+
+    @Test
+    void get_all_recipe_paged(){
+        int pageNumber = 1;
+        int pageSize = 2;
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+
+        Page<Recipe> allRecipes = recipeRepository.findAll(pageable);
+
+        assertThat(allRecipes.getTotalPages()).isEqualTo(3);
+        assertThat(allRecipes.getContent().size()).isEqualTo(pageSize);
+        assertThat(allRecipes.getTotalElements()).isEqualTo(5);
     }
 
     @Test
@@ -173,6 +183,7 @@ public class RecipeRepositoryTest {
 
     @Test
     void return_recipe_that_is_Vegetarian(){
+        RecipeSpecification specification= new RecipeSpecification();
         specification.add(new SearchCriteria("isVegetarian", true, Operation.EQUAL));
 
         List<Recipe> myRecipeList = recipeRepository.findAll(specification);
@@ -184,6 +195,7 @@ public class RecipeRepositoryTest {
 
     @Test
     void return_recipe_that_have_less3serving(){
+        RecipeSpecification specification= new RecipeSpecification();
         specification.add(new SearchCriteria("serving", 3, Operation.LESS_THAN));
 
         List<Recipe> myRecipeList = recipeRepository.findAll(specification);
@@ -195,6 +207,7 @@ public class RecipeRepositoryTest {
 
     @Test
     void return_recipe_with_ingredient9(){
+        RecipeSpecification specification= new RecipeSpecification();
         specification.add(new SearchCriteria("ingredients", "ingredient 9", Operation.IN));
 
         List<Recipe> myRecipeList = recipeRepository.findAll(specification);
@@ -208,6 +221,7 @@ public class RecipeRepositoryTest {
 
     @Test
     void return_recipe_with_no_ingredient9(){
+        RecipeSpecification specification= new RecipeSpecification();
         specification.add(new SearchCriteria("ingredients", "ingredient 9", Operation.NOT_IN));
 
         List<Recipe> myRecipeList = recipeRepository.findAll(specification);
@@ -221,6 +235,7 @@ public class RecipeRepositoryTest {
 
     @Test
     void return_recipe_contain_oven_on_instruction(){
+        RecipeSpecification specification= new RecipeSpecification();
         specification.add(new SearchCriteria("instructions", "oven", Operation.CONTAIN));
 
         List<Recipe> myRecipeList = recipeRepository.findAll(specification);
@@ -234,11 +249,12 @@ public class RecipeRepositoryTest {
 
 
     @Test
-    void return_recipe_that_is_Vegetarian_less3serving_withIngredient5_airFairInstruction(){
+    void return_recipe_that_is_Vegetarian_less3serving_withIngredient5_airFryerInstruction(){
+        RecipeSpecification specification= new RecipeSpecification();
         specification.add(new SearchCriteria("isVegetarian", true, Operation.EQUAL));
         specification.add(new SearchCriteria("serving", 3, Operation.LESS_THAN));
         specification.add(new SearchCriteria("ingredients", "ingredient 5", Operation.IN));
-        specification.add(new SearchCriteria("instructions", "airFair", Operation.CONTAIN));
+        specification.add(new SearchCriteria("instructions", "airFryer", Operation.CONTAIN));
 
         List<Recipe> myRecipeList = recipeRepository.findAll(specification);
 
@@ -250,7 +266,23 @@ public class RecipeRepositoryTest {
     }
 
     @Test
+    void return_recipe_filter_by_name_withIngredient1(){
+        RecipeSpecification specification= new RecipeSpecification();
+        specification.add(new SearchCriteria("name", "recipe test 1", Operation.EQUAL));
+        specification.add(new SearchCriteria("ingredients", "ingredient 1", Operation.IN));
+
+        List<Recipe> myRecipeList = recipeRepository.findAll(specification);
+
+        System.out.println(myRecipeList);
+
+        assertThat(myRecipeList.size()).isEqualTo(1);
+        List<String> listIds = myRecipeList.stream().map(value -> value.getName()).toList();
+        assertThat(listIds).contains("recipe test 1");
+    }
+
+    @Test
     void return_recipe_that_dont_have_ingredient5_ovenInstruction(){
+        RecipeSpecification specification= new RecipeSpecification();
         specification.add(new SearchCriteria("ingredients", "ingredient 5", Operation.NOT_IN));
         specification.add(new SearchCriteria("instructions", "oven", Operation.CONTAIN));
 

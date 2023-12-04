@@ -3,7 +3,6 @@ package com.cookin.recipemanager.repository.specification;
 import com.cookin.recipemanager.entity.Recipe;
 import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
